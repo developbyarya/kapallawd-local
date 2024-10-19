@@ -33,12 +33,12 @@ const app = express();
 const port = 3000; // Port for Express server
 
 // Replace with your serial port path and baud rate
-// // const serialPortPath = "/dev/ttyACM0"; // e.g., COM3 for Windows, /dev/ttyUSB0 for Linux
-// // const baudRate = 115200;
+const serialPortPath = "/dev/ttyACM0"; // e.g., COM3 for Windows, /dev/ttyUSB0 for Linux
+const baudRate = 2000000;
 
 // // // Create a new serial port
-// const serialPort = new SerialPort(serialPortPath, { baudRate: baudRate });
-// const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+const serialPort = new SerialPort(serialPortPath, { baudRate: baudRate });
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
 // Middleware to parse JSON requests
 app.use(cors());
@@ -77,19 +77,19 @@ app.get("/gps", (req, res) => {
 // POST API to receive data and send it to the serial port
 
 // // Listen for data coming from the serial port
-// parser.on("data", async (data) => {
-//   console.log("Received from serial port:", data);
-//   const resp = JSON.parse(data);
-//   lat_loc = { lat: resp.lat, lng: datrespa.lng };
+parser.on("data", async (data) => {
+  console.log("Received from serial port:", data);
+  const [lat, lng, speed] = data.split(",");
+  lat_loc = { lat, lng, speed };
 
-//   const docRef = await addDoc(gpsRef, {
-//     loc: [data.lat, data.lng],
-//     speed: data.speed,
-//     timestamp: Timestamp.now(),
-//   });
-// });
+  const docRef = await addDoc(gpsRef, {
+    loc: [lat, lng],
+    speed: speed,
+    timestamp: Timestamp.now(),
+  });
+});
 
-// serialPort.on("error", (err) => {});
+serialPort.on("error", (err) => {});
 
 // Start the Express server
 app.listen(port, () => {
